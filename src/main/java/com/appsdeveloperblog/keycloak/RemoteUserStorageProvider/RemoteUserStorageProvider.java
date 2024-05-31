@@ -56,7 +56,7 @@ public class RemoteUserStorageProvider implements UserStorageProvider, UserLooku
         return PasswordCredentialModel.TYPE.equals(credentialType);
     }
 
-
+    //to verify password
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
         VerifyPasswordResponse verifyPasswordResponse = userApiService.verifyUserPassword(user.getUsername(),

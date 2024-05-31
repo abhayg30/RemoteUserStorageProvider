@@ -5,8 +5,6 @@ import javax.ws.rs.core.MediaType;
 import java.awt.*;
 
 
-//RESTEasy Client
-
 @Path("/users")
 @Consumes(MediaType.APPLICATION_JSON)
 public interface UserApiService {
