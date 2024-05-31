@@ -3,6 +3,9 @@ package com.appsdeveloperblog.keycloak.RemoteUserStorageProvider;
 public class VerifyPasswordResponse {
     private boolean result;
 
+    public VerifyPasswordResponse() {
+        
+    }
     public VerifyPasswordResponse(boolean result) {
         this.result = result;
     }
