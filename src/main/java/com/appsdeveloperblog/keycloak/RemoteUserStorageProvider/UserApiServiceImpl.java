@@ -1,11 +1,11 @@
 package com.appsdeveloperblog.keycloak.RemoteUserStorageProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.PathParam;
 import org.jboss.logging.Logger;
 import org.keycloak.broker.provider.util.SimpleHttp;
 import org.keycloak.models.KeycloakSession;
 
-import javax.ws.rs.PathParam;
 import java.io.IOException;
 
 public class UserApiServiceImpl {

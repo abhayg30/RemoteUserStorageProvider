@@ -1,8 +1,8 @@
 package com.appsdeveloperblog.keycloak.RemoteUserStorageProvider;
+import com.appsdeveloperblog.keycloak.UserAdapter;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.credential.CredentialInput;
 import org.keycloak.credential.CredentialInputValidator;
-import org.keycloak.credential.LegacyUserCredentialManager;
 import org.keycloak.models.*;
 import org.keycloak.models.credential.PasswordCredentialModel;
 import org.keycloak.storage.StorageId;
@@ -10,7 +10,7 @@ import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.adapter.AbstractUserAdapter;
 import org.keycloak.storage.user.UserLookupProvider;
 
-public class RemoteUserStorageProvider implements UserStorageProvider, UserLookupProvider, CredentialInputValidator {
+public class RemoteUserStorageProvider implements UserLookupProvider, CredentialInputValidator, UserStorageProvider {
 
     private KeycloakSession keycloakSession;
     private ComponentModel componentModel;
@@ -22,58 +22,17 @@ public class RemoteUserStorageProvider implements UserStorageProvider, UserLooku
         this.userApiService=userApiService;
     }
 
-    protected UserModel createAdapter(RealmModel realm, String username) {
-
-        // Create a new user adapter based on the AbstractUserAdapter class
-        return new AbstractUserAdapter(keycloakSession, realm, componentModel) {
-
-            // Override the getUsername method to return the username from the remote
-            // service
-            @Override
-            public String getUsername() {
-
-                return username;
-
-            }
-
-            @Override
-            public SubjectCredentialManager credentialManager() {
-
-                // Create a new credential manager based on the LegacyUserCredentialManager
-                // class
-                return new LegacyUserCredentialManager(session, realm, this) {
-
-                };
-
-            }
-
-        };
-    }
-
     @Override
-    public boolean supportsCredentialType(String credentialType) {
+    public void close() {
+        // TODO Auto-generated method stub
 
-        return PasswordCredentialModel.TYPE.equals(credentialType);
-    }
-
-    //to verify password
-    @Override
-    public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
-        VerifyPasswordResponse verifyPasswordResponse = userApiService.verifyUserPassword(user.getUsername(),
-                credentialInput.getChallengeResponse());
-
-        if (verifyPasswordResponse == null)
-            return false;
-
-        return verifyPasswordResponse.getResult();
     }
 
     @Override
     public UserModel getUserById(RealmModel realm, String id) {
         StorageId storageId = new StorageId(id);
-        String username = storageId.getExternalId();
-
-        return getUserByUsername(realm, username);
+        String email = storageId.getExternalId();
+        return getUserByUsername(realm, email);
     }
 
     @Override
@@ -82,8 +41,8 @@ public class RemoteUserStorageProvider implements UserStorageProvider, UserLooku
 
         User user = userApiService.getUserByUserName(username);
 
-        if (user != null) {
-            returnValue = createAdapter(realm, username);
+        if(user!=null) {
+            returnValue = new UserAdapter(keycloakSession, realm, componentModel, user);
         }
 
         return returnValue;
@@ -95,18 +54,25 @@ public class RemoteUserStorageProvider implements UserStorageProvider, UserLooku
     }
 
     @Override
-    public CredentialValidationOutput getUserByCredential(RealmModel realm, CredentialInput input) {
-        return UserLookupProvider.super.getUserByCredential(realm, input);
+    public boolean supportsCredentialType(String credentialType) {
+        return PasswordCredentialModel.TYPE.equals(credentialType);
     }
 
     @Override
     public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-        return user.credentialManager().isConfiguredFor(credentialType);
+        return credentialType.equals(PasswordCredentialModel.TYPE);
     }
 
     @Override
-    public void close() {
-        // TODO Auto-generated method stub
+    public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
+        VerifyPasswordResponse verifyPasswordResponse = userApiService.verifyUserPassword(user.getUsername(),
+                credentialInput.getChallengeResponse());
 
+        if(verifyPasswordResponse == null) {
+            return false;
+        }
+
+
+        return verifyPasswordResponse.getResult();
     }
 }

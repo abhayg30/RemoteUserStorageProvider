@@ -1,7 +1,7 @@
 package com.appsdeveloperblog.keycloak.RemoteUserStorageProvider;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import java.awt.*;
 
 
